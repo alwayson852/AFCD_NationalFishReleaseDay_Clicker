@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Responsive Circle</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Update 'background.jpg' to your actual file name */
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .giant-circle {
+            /* 80vmin means 80% of the screen's smallest side */
+            /* This gives a consistent 'space' of 10% on all sides */
+            width: 80vmin;
+            height: 80vmin;
+            
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 8vmin; /* Text scales with the button */
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.4);
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animation triggered by JavaScript */
+        .click-active {
+            animation: bounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.92); } /* Shrinks slightly */
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="giant-circle" id="mainBtn">
+        GO
+    </button>
+
+    <script>
+        const btn = document.getElementById('mainBtn');
+
+        btn.addEventListener('click', () => {
+            btn.classList.remove('click-active');
+            void btn.offsetWidth; // Reset animation
+            btn.classList.add('click-active');
+            
+            // You can add audio or haptic feedback triggers here later
+            console.log("Giant button clicked");
+        });
+    </script>
+</body>
+</html>
