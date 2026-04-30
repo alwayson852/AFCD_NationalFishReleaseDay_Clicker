@@ -3,75 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Responsive Circle</title>
+    <title>Fish Cage Event</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            /* Update 'background.jpg' to your actual file name */
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            display: flex; justify-content: center; align-items: center;
             background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
+            overflow: hidden;
             font-family: -apple-system, sans-serif;
         }
 
-        .giant-circle {
-            /* 80vmin means 80% of the screen's smallest side */
-            /* This gives a consistent 'space' of 10% on all sides */
+        /* 魚籠容器 */
+        #cage {
+            position: relative;
+            /* 圓形籠子大小，佔螢幕最小邊長的 80% */
             width: 80vmin;
             height: 80vmin;
-            
-            background-color: #007AFF;
-            color: white;
-            border: none;
+            background-color: rgba(255, 255, 255, 0.1); /* 極輕微透明背景 */
+            border: 6px solid #ffffff; /* 白色籠邊 */
             border-radius: 50%;
-            font-size: 8vmin; /* Text scales with the button */
-            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.4);
-            
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden; /* 核心：確保內容物不超出圓圈 */
             outline: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animation triggered by JavaScript */
+        /* 點擊時籠子的縮放效果 */
         .click-active {
-            animation: bounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: bounce 0.2s ease-out;
         }
 
         @keyframes bounce {
             0% { transform: scale(1); }
-            50% { transform: scale(0.92); } /* Shrinks slightly */
+            50% { transform: scale(0.96); }
             100% { transform: scale(1); }
+        }
+
+        /* 魚的樣式 */
+        .fish {
+            position: absolute;
+            width: 50px; /* 魚的大小 */
+            height: auto;
+            pointer-events: none; /* 魚不影響點擊 */
+            user-select: none;
+        }
+
+        /* 初始提示字 */
+        #hint {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 5vmin;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <button class="giant-circle" id="mainBtn">
-        GO
-    </button>
+    <div id="cage">
+        <span id="hint">㩒我加魚！</span>
+    </div>
 
     <script>
-        const btn = document.getElementById('mainBtn');
+        const cage = document.getElementById('cage');
+        const hint = document.getElementById('hint');
 
-        btn.addEventListener('click', () => {
-            btn.classList.remove('click-active');
-            void btn.offsetWidth; // Reset animation
-            btn.classList.add('click-active');
-            
-            // You can add audio or haptic feedback triggers here later
-            console.log("Giant button clicked");
+        cage.addEventListener('click', (e) => {
+            // 第一次點擊後隱藏提示
+            if (hint) hint.style.display = 'none';
+
+            // 每次點擊加 5-8 條隨機數量的魚
+            const batchSize = Math.floor(Math.random() * 4) + 5;
+            for (let i = 0; i < batchSize; i++) {
+                addFish();
+            }
+
+            // 觸發籠子動畫
+            cage.classList.remove('click-active');
+            void cage.offsetWidth; 
+            cage.classList.add('click-active');
         });
+
+        function addFish() {
+            const fish = document.createElement('img');
+            fish.src = 'fish.png';
+            fish.className = 'fish';
+
+            // 利用極坐標系確保魚在圓形半徑內 (半徑設為 45% 留一點邊界)
+            const radius = Math.sqrt(Math.random()) * 45; 
+            const angle = Math.random() * Math.PI * 2;
+            
+            // 轉回百分比坐標
+            const x = 50 + radius * Math.cos(angle);
+            const y = 50 + radius * Math.sin(angle);
+
+            // 隨機角度和微調大小
+            const rotation = Math.random() * 360;
+            const scale = 0.8 + Math.random() * 0.4; // 魚有大有細
+
+            fish.style.left = `${x}%`;
+            fish.style.top = `${y}%`;
+            fish.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${scale})`;
+
+            cage.appendChild(fish);
+        }
     </script>
 </body>
 </html>
