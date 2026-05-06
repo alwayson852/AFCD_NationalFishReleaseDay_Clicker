@@ -3,165 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fish Event - Final Version</title>
+    <title>Fish Event - Wiggle Effect</title>
     <style>
-        /* 全螢幕基礎設定 */
         body, html {
-            margin: 0; padding: 0;
-            height: 100%; width: 100%;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; background-color: #000;
             font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
         }
 
-        /* 通用全屏圖層樣式 */
         .full-screen {
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
         }
 
-        /* 1. 背景層 */
-        .bg-layer {
-            background: url('background.jpg') no-repeat center center;
-            background-size: cover;
-            z-index: 1;
-        }
+        .bg-layer { background: url('background.jpg') no-repeat center center; background-size: cover; z-index: 1; }
+        #video-layer { z-index: 2; object-fit: cover; pointer-events: none; }
+        .cage-layer { background: url('cage.png') no-repeat center center; background-size: cover; z-index: 3; pointer-events: none; }
 
-        /* 2. 影片層 (與背景同處理) */
-        #video-layer {
-            z-index: 2;
-            object-fit: cover; /* 關鍵：確保影片像背景一樣 cover 鋪滿 */
-            pointer-events: none;
-        }
-
-        /* 3. 魚籠層 (與背景同處理) */
-        .cage-layer {
-            background: url('cage.png') no-repeat center center;
-            background-size: cover; /* 關鍵：確保籠子與背景完全對齊 */
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        /* 4. 鎖頭互動層 */
-        .ui-layer {
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        #lock-btn {
-            width: 30vmin;
-            height: 30vmin;
-            background: url('Lock.png') no-repeat center center;
-            background-size: contain;
-            cursor: pointer;
-            pointer-events: auto;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform 0.1s ease;
-        }
-
-        #lock-btn:active {
-            transform: scale(0.9);
-        }
-
-        /* 5. 隨機字句動畫 */
-        .slogan {
+        /* 魚隻基礎樣式 */
+        .fish-element {
             position: absolute;
-            color: #ffffff;
-            font-size: 8vmin;
-            font-weight: bold;
-            text-shadow: 0 0 10px #007AFF, 0 0 20px rgba(0,0,0,0.8);
-            z-index: 20;
+            width: 50px; 
+            height: auto;
+            z-index: 4; 
             pointer-events: none;
-            white-space: nowrap;
+            opacity: 0.85;
+            /* 讓每條魚的動畫初始狀態隨機化 */
+            animation: wiggle 4s ease-in-out infinite;
+        }
+
+        /* Wiggle 擺動動畫：輕微位移 + 旋轉 */
+        @keyframes wiggle {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5px, 3px) rotate(3deg); }
+            50% { transform: translate(-3px, 5px) rotate(-2deg); }
+            75% { transform: translate(-5px, -2px) rotate(2deg); }
+        }
+
+        .ui-layer { z-index: 10; display: flex; justify-content: center; align-items: center; pointer-events: none; }
+        #lock-btn {
+            width: 30vmin; height: 30vmin;
+            background: url('Lock.png') no-repeat center center; background-size: contain;
+            cursor: pointer; pointer-events: auto; outline: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        .slogan {
+            position: absolute; color: #ffffff; font-size: 8vmin; font-weight: bold;
+            text-shadow: 0 0 10px #007AFF, 0 0 20px rgba(0,0,0,0.8);
+            z-index: 20; pointer-events: none; white-space: nowrap;
             animation: popOut 1.2s ease-out forwards;
         }
 
         @keyframes popOut {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-            30% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -150%) scale(1); }
+            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <!-- 背景層 -->
     <div class="full-screen bg-layer"></div>
-
-    <!-- 影片層 - 檔名改為 Fishflow -->
     <video id="video-layer" class="full-screen" autoplay loop muted playsinline>
         <source src="Fishflow.mov" type="video/quicktime">
         <source src="Fishflow.mp4" type="video/mp4">
     </video>
-
-    <!-- 魚籠層 -->
     <div class="full-screen cage-layer"></div>
 
-    <!-- 鎖頭層 -->
+    <div id="fish-tank" class="full-screen"></div>
+
     <div class="full-screen ui-layer">
         <div id="lock-btn"></div>
     </div>
 
     <script>
- const lockBtn = document.getElementById('lock-btn');
+        const lockBtn = document.getElementById('lock-btn');
+        const fishTank = document.getElementById('fish-tank');
+        const slogans = ["加油！", "全力以赴", "Fighting!", "大豐收！", "衝呀！", "給力！"];
 
-const slogans = [
-    "加油！", "全力以赴", "Fighting!", "撐住！", 
-    "大豐收！", "加碼！", "衝呀！", "給力！",
-    "掂呀！", "Good Job!", "繼續努力"
-];
+        // 初始化魚群
+        function initFish() {
+            const fishCount = 80; // 增加一點數量讓魚群更豐富
+            for (let i = 0; i < fishCount; i++) {
+                const fish = document.createElement('img');
+                fish.src = 'fish.png';
+                fish.className = 'fish-element';
+                
+                // 隨機生成位置
+                const x = Math.random() * 80 + 10; // 避開邊緣
+                const y = Math.random() * 80 + 10;
+                const scale = 0.4 + Math.random() * 0.4;
+                
+                // 隨機左右朝向
+                const flip = Math.random() > 0.5 ? 1 : -1;
 
-lockBtn.addEventListener('click', () => {
-    showRandomSlogan();
-});
+                fish.style.left = x + '%';
+                fish.style.top = y + '%';
+                
+                // 為了讓魚群看起來不僵硬，給每條魚隨機的動畫長度和延遲
+                const duration = 3 + Math.random() * 3; // 3-6秒完成一次擺動
+                const delay = Math.random() * -5; // 隨機初始進度
+                
+                fish.style.animationDuration = `${duration}s`;
+                fish.style.animationDelay = `${delay}s`;
+                fish.style.transform = `scale(${scale}) scaleX(${flip})`;
 
-function showRandomSlogan() {
-    const text = document.createElement('div');
-    text.className = 'slogan';
-    text.innerText = slogans[Math.floor(Math.random() * slogans.length)];
-
-    let posX, posY;
-    let isInsideLock = true;
-
-    // 取得鎖頭的位置和大小（避開這個區域）
-    const lockRect = lockBtn.getBoundingClientRect();
-    const padding = 20; // 額外留一點邊距，確保字不會貼住鎖頭
-
-    // 循環計算，直到位置不在鎖頭範圍內
-    while (isInsideLock) {
-        // 在螢幕 10% 到 90% 的範圍內隨機取值，避免字出現在最邊邊被裁切
-        posX = Math.random() * 80 + 10; 
-        posY = Math.random() * 80 + 10;
-
-        // 將百分比轉為像素位置來比對
-        const pixelX = (posX / 100) * window.innerWidth;
-        const pixelY = (posY / 100) * window.innerHeight;
-
-        // 判斷是否落在鎖頭的矩形區域內
-        if (!(pixelX > lockRect.left - padding && 
-              pixelX < lockRect.right + padding && 
-              pixelY > lockRect.top - padding && 
-              pixelY < lockRect.bottom + padding)) {
-            isInsideLock = false;
+                fishTank.appendChild(fish);
+            }
         }
-    }
 
-    text.style.left = `${posX}%`;
-    text.style.top = `${posY}%`;
-    // 將 transform 改為 translate(-50%, -50%) 確保座標點是字的中心
-    text.style.transform = 'translate(-50%, -50%)';
+        // 鎖頭字句邏輯
+        lockBtn.addEventListener('click', () => {
+            const text = document.createElement('div');
+            text.className = 'slogan';
+            text.innerText = slogans[Math.floor(Math.random() * slogans.length)];
+            
+            // 隨機在鎖頭附近生成
+            const x = Math.random() * 60 + 20;
+            const y = Math.random() * 60 + 20;
+            text.style.left = x + '%';
+            text.style.top = y + '%';
+            text.style.transform = 'translate(-50%, -50%)';
 
-    document.body.appendChild(text);
+            document.body.appendChild(text);
+            setTimeout(() => text.remove(), 1200);
+        });
 
-    setTimeout(() => {
-        text.remove();
-    }, 1200);
-}
+        window.onload = initFish;
     </script>
 </body>
 </html>
