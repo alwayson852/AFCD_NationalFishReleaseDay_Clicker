@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Extreme Close Collection</title>
+    <title>Sea Interactive - Big & Fast Collection</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -13,7 +13,7 @@
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        /* 1. 影片層 */
+        /* 1. 影片層 (底層) */
         #video-layer { z-index: 1; object-fit: cover; pointer-events: none; }
 
         /* 2. 魚群容器 */
@@ -24,16 +24,16 @@
             width: 100%; height: 100%;
         }
 
+        /* 魚隻樣式：尺寸加倍 (17vmin) */
         .collected-fish {
             position: absolute;
-            width: 8.5vmin;
+            width: 17vmin; 
             height: auto;
             opacity: 0;
-            /* 保持強白色光暈以區分按鈕與魚 */
-            filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
+            filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
             will-change: transform, opacity;
             animation: 
-                justFadeIn 1s ease-out forwards, 
+                justFadeIn 0.8s ease-out forwards, 
                 fishWiggleZoom 3s ease-in-out infinite;
         }
 
@@ -44,8 +44,8 @@
 
         @keyframes fishWiggleZoom {
             0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-            25% { transform: translate(-50%, -50%) rotate(5deg) scale(1.1); }
-            75% { transform: translate(-50%, -50%) rotate(-5deg) scale(0.95); }
+            25% { transform: translate(-50%, -50%) rotate(5deg) scale(1.08); }
+            75% { transform: translate(-50%, -50%) rotate(-5deg) scale(0.96); }
         }
 
         /* 3. 互動層：Lock */
@@ -70,6 +70,7 @@
 
         #lock-container.bump #lock-img { transform: scale(0.8); }
 
+        /* Lock 點擊波紋 */
         .ripple {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             border: 8px solid rgba(255, 255, 255, 0.7); border-radius: 50%;
@@ -98,30 +99,26 @@
         const fishLayer = document.getElementById('fish-layer');
 
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
-        let clickCount = 0;
-        const targetClicks = 2; 
 
         lockContainer.addEventListener('click', () => {
+            // 每次點擊都有反饋
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
 
-            clickCount++;
-            if (clickCount >= targetClicks) {
-                spawnExtremeCloseFish();
-                clickCount = 0;
-            }
+            // 每一下都出一條魚
+            spawnBigFastFish();
         });
 
-        function spawnExtremeCloseFish() {
+        function spawnBigFastFish() {
             const randomSrc = fishPool[Math.floor(Math.random() * fishPool.length)];
             const img = document.createElement('img');
             img.src = randomSrc;
             img.className = 'collected-fish';
 
-            // 半徑進一步縮小至 13-23%，這會使魚隻與按鈕產生部分重疊
+            // 範圍擴大：由 12% (極近) 到 45% (較遠)
             const angle = Math.random() * Math.PI * 2;
-            const radius = 13 + Math.random() * 10; 
+            const radius = 12 + Math.random() * 33; 
             
             const x = 50 + radius * Math.cos(angle);
             const y = 50 + radius * Math.sin(angle);
@@ -129,9 +126,11 @@
             img.style.left = x + '%';
             img.style.top = y + '%';
 
+            // 隨機鏡像翻轉
             const flip = Math.random() > 0.5 ? 1 : -1;
             img.style.transform = `translate(-50%, -50%) scaleX(${flip})`;
 
+            // 錯開動畫時間，令魚群更有動感
             const animDelay = Math.random() * -5;
             img.style.animationDelay = `0s, ${animDelay}s`; 
             
