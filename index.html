@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Fish Fade-in Collection</title>
+    <title>Sea Interactive - Video & Fish Only</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -13,25 +13,14 @@
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        /* 1. 底層背景 */
-        .bg-base { 
-            background: url('background.jpg') no-repeat center center; 
-            background-size: cover; 
+        /* 1. 影片層 (底層) */
+        #video-layer { 
             z-index: 1; 
-        }
-
-        /* 2. 影片層 */
-        #video-layer { z-index: 2; object-fit: cover; pointer-events: none; }
-
-        /* 3. 網格層 */
-        .net-layer { 
-            background: url('net.png') no-repeat center center; 
-            background-size: cover; 
-            z-index: 3; 
+            object-fit: cover; 
             pointer-events: none; 
         }
 
-        /* 4. 魚群收集容器 (一開始是空的) */
+        /* 2. 魚群收集容器 (位於影片之上，Lock 之下) */
         #fish-layer {
             z-index: 5;
             pointer-events: none;
@@ -39,36 +28,31 @@
             width: 100%; height: 100%;
         }
 
-        /* 魚圖基礎樣式，初始不透明度為 0 */
         .collected-fish {
             position: absolute;
             top: 0; left: 0;
             width: 100vw;
             height: 100vh;
             object-fit: contain;
-            opacity: 0; /* 確保初始隱藏 */
+            opacity: 0;
             filter: brightness(1) contrast(1.4) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
             will-change: transform, opacity;
-            
-            /* 兩個動畫：1. 出現時的淡入 (1.5秒), 2. 呼吸動畫 (循環) */
             animation: 
                 fadeInStart 1.5s ease-out forwards,
                 fishBreathCycle 6s ease-in-out infinite;
         }
 
-        /* 初始出現的淡入加放大效果 */
         @keyframes fadeInStart {
             0% { opacity: 0; transform: scale(1.1); }
             100% { opacity: 1; transform: scale(1); }
         }
 
-        /* 平滑呼吸循環 */
         @keyframes fishBreathCycle {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.08); }
         }
 
-        /* 5. 互動層：Lock */
+        /* 3. 互動層：Lock */
         .interactive-zone {
             z-index: 10;
             display: flex; justify-content: center; align-items: center;
@@ -89,36 +73,30 @@
 
         #lock-container.bump #lock-img { transform: scale(0.8); }
 
-        /* 波紋與文字樣式 */
+        /* 波紋樣式 */
         .ripple {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             border: 10px solid rgba(255, 255, 255, 0.8); border-radius: 50%;
             pointer-events: none; z-index: 8; animation: rippleEffect 1s ease-out forwards;
         }
-        @keyframes rippleEffect { 0% { width: 0; height: 0; opacity: 1; border-width: 15px; } 100% { width: 120vmin; height: 120vmin; opacity: 0; border-width: 2px; } }
-
-        .pop-text {
-            position: absolute; color: #fff; font-size: 8vmin; font-weight: bold;
-            text-shadow: 0 0 10px rgba(0,122,255,0.9); z-index: 20; pointer-events: none;
-            animation: textJump 1.2s ease-out forwards;
+        @keyframes rippleEffect { 
+            0% { width: 0; height: 0; opacity: 1; border-width: 15px; } 
+            100% { width: 120vmin; height: 120vmin; opacity: 0; border-width: 2px; } 
         }
-        @keyframes textJump { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) translateY(-20px); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-120px); } }
     </style>
 </head>
 <body>
 
-    <div class="layer bg-base"></div>
-
+    <!-- 1. 影片層 -->
     <video id="video-layer" class="layer" autoplay loop muted playsinline>
         <source src="background1.mov" type="video/quicktime">
         <source src="background1.mp4" type="video/mp4">
     </video>
 
-    <div class="layer net-layer"></div>
-
-    <!-- 魚群收集容器：一開始是空的 -->
+    <!-- 2. 魚群收集容器 -->
     <div id="fish-layer" class="layer"></div>
 
+    <!-- 3. 互動層 -->
     <div class="layer interactive-zone">
         <div id="lock-container">
             <img src="Lock.png" id="lock-img" alt="Lock">
@@ -128,26 +106,20 @@
     <script>
         const lockContainer = document.getElementById('lock-container');
         const fishLayer = document.getElementById('fish-layer');
-        const slogans = ["加油！", "給力！", "Fighting!", "衝呀！", "掂呀！", "Good Job!"];
 
         const fishImages = ['fish1.png', 'fish2.png', 'fish3.png', 'fish4.png', 'fish5.png', 'fish6.png', 'fish7.png', 'fish8.png'];
         let clickCount = 0;
-        let currentFishIndex = 0; // 從 0 開始 (第一張魚)
-        let targetClicks = Math.floor(Math.random() * 2) + 6; // 6 或 7 下
+        let currentFishIndex = 0; 
+        let targetClicks = Math.floor(Math.random() * 2) + 6; 
         let allFishCollected = false;
 
         lockContainer.addEventListener('click', () => {
-            // 基本互動動畫
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-            createPopText();
 
-            // 如果魚還沒出完，繼續計數
             if (!allFishCollected) {
                 clickCount++;
-                console.log(`Click count: ${clickCount}/${targetClicks}`);
-
                 if (clickCount >= targetClicks) {
                     triggerNextFishFadeIn();
                 }
@@ -156,18 +128,14 @@
 
         function triggerNextFishFadeIn() {
             if (currentFishIndex < fishImages.length) {
-                // 新增並 Fade-in 新魚
                 addNewFishWithAnimation(currentFishIndex);
                 currentFishIndex++;
                 
-                // 重置計數與隨機閾值
                 clickCount = 0;
                 targetClicks = Math.floor(Math.random() * 2) + 6;
 
-                // 檢查是否已出完所有 8 組
                 if (currentFishIndex >= fishImages.length) {
                     allFishCollected = true;
-                    console.log("Collection complete. Final fish state.");
                 }
             }
         }
@@ -177,9 +145,7 @@
             img.src = fishImages[index];
             img.className = 'collected-fish';
             
-            // 隨機錯開每張魚的呼吸循環起點，睇落更自然
             const breathDelay = Math.random() * -5;
-            // 呼吸動畫延遲應用在第一個，淡入動畫不延遲
             img.style.animationDelay = `0s, ${breathDelay}s`; 
             
             fishLayer.appendChild(img);
@@ -190,22 +156,6 @@
             ripple.className = 'ripple';
             lockContainer.appendChild(ripple);
             setTimeout(() => ripple.remove(), 1000);
-        }
-
-        function createPopText() {
-            const text = document.createElement('div');
-            text.className = 'pop-text';
-            text.innerText = slogans[Math.floor(Math.random() * slogans.length)];
-            const angle = Math.random() * Math.PI * 2;
-            const minDist = 180; 
-            const dist = minDist + Math.random() * 80;
-            const x = window.innerWidth / 2 + Math.cos(angle) * dist;
-            const y = window.innerHeight / 2 + Math.sin(angle) * dist;
-            text.style.left = x + 'px';
-            text.style.top = y + 'px';
-            text.style.transform = 'translate(-50%, -50%)';
-            document.body.appendChild(text);
-            setTimeout(() => text.remove(), 1200);
         }
     </script>
 </body>
