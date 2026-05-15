@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Closer Initial Fish</title>
+    <title>Sea Interactive - Full Layers</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -13,8 +13,21 @@
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
+        /* 0. 最底層背景圖 */
+        .bg-base { 
+            background: url('background.jpg') no-repeat center center; 
+            background-size: cover; 
+            z-index: 0; 
+        }
+
         /* 1. 影片層 */
-        #video-layer { z-index: 1; object-fit: cover; pointer-events: none; }
+        #video-layer { 
+            z-index: 1; 
+            object-fit: cover; 
+            pointer-events: none; 
+            /* 如果影片有透明度，保持為 1；若想讓底圖透出，可微調 opacity */
+            opacity: 1; 
+        }
 
         /* 2. 魚群容器 */
         #fish-layer {
@@ -79,12 +92,19 @@
 </head>
 <body>
 
+    <!-- 0. 最底層靜態圖 -->
+    <div class="layer bg-base"></div>
+
+    <!-- 1. 影片層 -->
     <video id="video-layer" class="layer" autoplay loop muted playsinline>
+        <source src="background1.mov" type="video/quicktime">
         <source src="background1.mp4" type="video/mp4">
     </video>
 
+    <!-- 2. 魚群層 -->
     <div id="fish-layer" class="layer"></div>
 
+    <!-- 3. 互動層 -->
     <div class="layer interactive-zone">
         <div id="lock-container">
             <img src="Lock.png" id="lock-img" alt="Lock">
@@ -96,10 +116,8 @@
         const fishLayer = document.getElementById('fish-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        // --- 初始化：預先出現 30 條較近的魚 ---
         function initCloserFish() {
             for (let i = 0; i < 30; i++) {
-                // radius 設為 25% 至 55%，比之前拉近了一倍
                 spawnFish(25, 30); 
             }
         }
@@ -108,8 +126,6 @@
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-            
-            // 點擊生成的魚繼續保持在 12% 至 45%
             spawnFish(12, 33);
         });
 
