@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Big & Fast Collection</title>
+    <title>Sea Interactive - Closer Initial Fish</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -13,7 +13,7 @@
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        /* 1. 影片層 (底層) */
+        /* 1. 影片層 */
         #video-layer { z-index: 1; object-fit: cover; pointer-events: none; }
 
         /* 2. 魚群容器 */
@@ -24,7 +24,6 @@
             width: 100%; height: 100%;
         }
 
-        /* 魚隻樣式：尺寸加倍 (17vmin) */
         .collected-fish {
             position: absolute;
             width: 17vmin; 
@@ -70,7 +69,6 @@
 
         #lock-container.bump #lock-img { transform: scale(0.8); }
 
-        /* Lock 點擊波紋 */
         .ripple {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             border: 8px solid rgba(255, 255, 255, 0.7); border-radius: 50%;
@@ -97,28 +95,33 @@
     <script>
         const lockContainer = document.getElementById('lock-container');
         const fishLayer = document.getElementById('fish-layer');
-
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
+        // --- 初始化：預先出現 30 條較近的魚 ---
+        function initCloserFish() {
+            for (let i = 0; i < 30; i++) {
+                // radius 設為 25% 至 55%，比之前拉近了一倍
+                spawnFish(25, 30); 
+            }
+        }
+
         lockContainer.addEventListener('click', () => {
-            // 每次點擊都有反饋
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-
-            // 每一下都出一條魚
-            spawnBigFastFish();
+            
+            // 點擊生成的魚繼續保持在 12% 至 45%
+            spawnFish(12, 33);
         });
 
-        function spawnBigFastFish() {
+        function spawnFish(baseRadius, range) {
             const randomSrc = fishPool[Math.floor(Math.random() * fishPool.length)];
             const img = document.createElement('img');
             img.src = randomSrc;
             img.className = 'collected-fish';
 
-            // 範圍擴大：由 12% (極近) 到 45% (較遠)
             const angle = Math.random() * Math.PI * 2;
-            const radius = 12 + Math.random() * 33; 
+            const radius = baseRadius + Math.random() * range; 
             
             const x = 50 + radius * Math.cos(angle);
             const y = 50 + radius * Math.sin(angle);
@@ -126,11 +129,9 @@
             img.style.left = x + '%';
             img.style.top = y + '%';
 
-            // 隨機鏡像翻轉
             const flip = Math.random() > 0.5 ? 1 : -1;
             img.style.transform = `translate(-50%, -50%) scaleX(${flip})`;
 
-            // 錯開動畫時間，令魚群更有動感
             const animDelay = Math.random() * -5;
             img.style.animationDelay = `0s, ${animDelay}s`; 
             
@@ -143,6 +144,9 @@
             lockContainer.appendChild(ripple);
             setTimeout(() => ripple.remove(), 800);
         }
+
+        window.onload = initCloserFish;
+
     </script>
 </body>
 </html>
