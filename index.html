@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Video & Fish Only</title>
+    <title>Sea Interactive - Interaction Only</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -20,36 +20,12 @@
             pointer-events: none; 
         }
 
-        /* 2. 魚群收集容器 (位於影片之上，Lock 之下) */
+        /* 2. 魚群容器 (目前保持空白) */
         #fish-layer {
             z-index: 5;
             pointer-events: none;
             position: absolute;
             width: 100%; height: 100%;
-        }
-
-        .collected-fish {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: contain;
-            opacity: 0;
-            filter: brightness(1) contrast(1.4) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-            will-change: transform, opacity;
-            animation: 
-                fadeInStart 1.5s ease-out forwards,
-                fishBreathCycle 6s ease-in-out infinite;
-        }
-
-        @keyframes fadeInStart {
-            0% { opacity: 0; transform: scale(1.1); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes fishBreathCycle {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
         }
 
         /* 3. 互動層：Lock */
@@ -60,28 +36,44 @@
         }
 
         #lock-container {
-            position: relative; width: 35vmin; height: 35vmin;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; pointer-events: auto;
+            position: relative; 
+            width: 35vmin; 
+            height: 35vmin;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            cursor: pointer; 
+            pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
         }
 
         #lock-img {
-            width: 100%; height: auto; z-index: 12;
+            width: 100%; 
+            height: auto; 
+            z-index: 12;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #lock-container.bump #lock-img { transform: scale(0.8); }
-
-        /* 波紋樣式 */
-        .ripple {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            border: 10px solid rgba(255, 255, 255, 0.8); border-radius: 50%;
-            pointer-events: none; z-index: 8; animation: rippleEffect 1s ease-out forwards;
+        /* 點擊時的 Bump 動畫 */
+        #lock-container.bump #lock-img { 
+            transform: scale(0.8); 
         }
+
+        /* Lock 點擊產生的波紋 (Ripple) */
+        .ripple {
+            position: absolute; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            border: 8px solid rgba(255, 255, 255, 0.7); 
+            border-radius: 50%;
+            pointer-events: none; 
+            z-index: 8; 
+            animation: rippleEffect 0.8s ease-out forwards;
+        }
+
         @keyframes rippleEffect { 
-            0% { width: 0; height: 0; opacity: 1; border-width: 15px; } 
-            100% { width: 120vmin; height: 120vmin; opacity: 0; border-width: 2px; } 
+            0% { width: 0; height: 0; opacity: 1; } 
+            100% { width: 80vmin; height: 80vmin; opacity: 0; } 
         }
     </style>
 </head>
@@ -93,7 +85,7 @@
         <source src="background1.mp4" type="video/mp4">
     </video>
 
-    <!-- 2. 魚群收集容器 -->
+    <!-- 2. 魚群容器 -->
     <div id="fish-layer" class="layer"></div>
 
     <!-- 3. 互動層 -->
@@ -105,57 +97,23 @@
 
     <script>
         const lockContainer = document.getElementById('lock-container');
-        const fishLayer = document.getElementById('fish-layer');
 
-        const fishImages = ['fish1.png', 'fish2.png', 'fish3.png', 'fish4.png', 'fish5.png', 'fish6.png', 'fish7.png', 'fish8.png'];
-        let clickCount = 0;
-        let currentFishIndex = 0; 
-        let targetClicks = Math.floor(Math.random() * 2) + 6; 
-        let allFishCollected = false;
-
+        // 點擊事件
         lockContainer.addEventListener('click', () => {
+            // 觸發縮放反應
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
+            
+            // 觸發波紋
             createRipple();
-
-            if (!allFishCollected) {
-                clickCount++;
-                if (clickCount >= targetClicks) {
-                    triggerNextFishFadeIn();
-                }
-            }
         });
-
-        function triggerNextFishFadeIn() {
-            if (currentFishIndex < fishImages.length) {
-                addNewFishWithAnimation(currentFishIndex);
-                currentFishIndex++;
-                
-                clickCount = 0;
-                targetClicks = Math.floor(Math.random() * 2) + 6;
-
-                if (currentFishIndex >= fishImages.length) {
-                    allFishCollected = true;
-                }
-            }
-        }
-
-        function addNewFishWithAnimation(index) {
-            const img = document.createElement('img');
-            img.src = fishImages[index];
-            img.className = 'collected-fish';
-            
-            const breathDelay = Math.random() * -5;
-            img.style.animationDelay = `0s, ${breathDelay}s`; 
-            
-            fishLayer.appendChild(img);
-        }
 
         function createRipple() {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
             lockContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 1000);
+            // 動畫結束後移除
+            setTimeout(() => ripple.remove(), 800);
         }
     </script>
 </body>
