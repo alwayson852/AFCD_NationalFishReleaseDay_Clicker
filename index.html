@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Net Layer Added</title>
+    <title>Sea Interactive - Background & Fish Only</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -20,23 +20,7 @@
             z-index: 0; 
         }
 
-        /* 1. 網格層 (夾喺背景同影片中間) */
-        .net-layer { 
-            background: url('net.png') no-repeat center center; 
-            background-size: cover; 
-            z-index: 1; 
-            pointer-events: none; 
-        }
-
-        /* 2. 影片層 (移上一層) */
-        #video-layer { 
-            z-index: 2; 
-            object-fit: cover; 
-            pointer-events: none; 
-            opacity: 1; 
-        }
-
-        /* 3. 魚群容器 */
+        /* 1. 魚群容器 */
         #fish-layer {
             z-index: 5;
             pointer-events: none;
@@ -67,7 +51,7 @@
             75% { transform: translate(-50%, -50%) rotate(-5deg) scale(0.96); }
         }
 
-        /* 4. 互動層：Lock */
+        /* 2. 互動層：Lock */
         .interactive-zone {
             z-index: 10;
             display: flex; justify-content: center; align-items: center;
@@ -99,22 +83,13 @@
 </head>
 <body>
 
-    <!-- 0. 最底層靜態圖 -->
+    <!-- 0. 靜態背景 -->
     <div class="layer bg-base"></div>
 
-    <!-- 1. 網格層 (Nut) -->
-    <div class="layer net-layer"></div>
-
-    <!-- 2. 影片層 -->
-    <video id="video-layer" class="layer" autoplay loop muted playsinline>
-        <source src="background1.mov" type="video/quicktime">
-        <source src="background1.mp4" type="video/mp4">
-    </video>
-
-    <!-- 3. 魚群層 -->
+    <!-- 1. 魚群層 -->
     <div id="fish-layer" class="layer"></div>
 
-    <!-- 4. 互動層 -->
+    <!-- 2. 互動層 -->
     <div class="layer interactive-zone">
         <div id="lock-container">
             <img src="Lock.png" id="lock-img" alt="Lock">
