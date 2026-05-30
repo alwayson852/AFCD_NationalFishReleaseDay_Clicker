@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AFCD</title>
+    <title>Sea Interactive - Infinite Fish Exhibit</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -128,9 +128,6 @@
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        let currentClicks = 0;
-        const maxClicks = 20;
-
         function initExhibit() {
             for (let i = 0; i < 30; i++) {
                 spawnFish(25, 30); 
@@ -171,15 +168,12 @@
             setTimeout(() => { bubble.remove(); }, duration * 1000);
         }
 
+        // 點擊事件：已拔除次數限制，每㩒一下必定出一條魚
         lockContainer.addEventListener('click', () => {
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-
-            if (currentClicks < maxClicks) {
-                spawnFish(12, 33);
-                currentClicks++;
-            }
+            spawnFish(12, 33);
         });
 
         function spawnFish(baseRadius, range) {
