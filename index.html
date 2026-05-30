@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agriculture, Fisheries and Conservation Department</title>
+    <title>Sea Interactive - Max 20 Fish & Background Bubbles</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -18,6 +18,52 @@
             background: url('background.jpg') no-repeat center center; 
             background-size: cover; 
             z-index: 0; 
+        }
+
+        /* [新加入] 0.5 氣泡層 (夾喺背景同魚中間) */
+        #bubble-layer {
+            z-index: 2;
+            pointer-events: none;
+            position: absolute;
+            width: 100%; height: 100%;
+            overflow: hidden;
+        }
+
+        /* 氣泡基礎樣式 */
+        .bubble {
+            position: absolute;
+            bottom: -50px; /* 喺畫面底部外開始升 */
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(255, 255, 255, 0.4) 70%, rgba(255, 255, 255, 0) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            will-change: transform, opacity;
+            /* 呼叫上升同埋左右搖擺起動畫 */
+            animation: floatUpAndFade 8s linear forwards, bubbleWobble 4s ease-in-out infinite;
+        }
+
+        /* 氣泡由下以上 + 淡入淡出動畫 */
+        @keyframes floatUpAndFade {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8; /* 升起少少完成淡入 */
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-110vh); /* 升出畫面頂部 */
+                opacity: 0; /* 頂部淡出消失 */
+            }
+        }
+
+        /* 氣泡左右微調搖擺，模擬真實水底氣流 */
+        @keyframes bubbleWobble {
+            0%, 100% { margin-left: 0px; }
+            50% { margin-left: 25px; }
         }
 
         /* 1. 魚群容器 */
@@ -83,13 +129,12 @@
 </head>
 <body>
 
-    <!-- 0. 靜態背景 -->
     <div class="layer bg-base"></div>
 
-    <!-- 1. 魚群層 -->
+    <div id="bubble-layer" class="layer"></div>
+
     <div id="fish-layer" class="layer"></div>
 
-    <!-- 2. 互動層 -->
     <div class="layer interactive-zone">
         <div id="lock-container">
             <img src="Lock.png" id="lock-img" alt="Lock">
@@ -99,19 +144,81 @@
     <script>
         const lockContainer = document.getElementById('lock-container');
         const fishLayer = document.getElementById('fish-layer');
+        const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        function initCloserFish() {
+        let currentClicks = 0;
+        const maxClicks = 20;
+
+        // --- 初始化展覽 ---
+        function initExhibit() {
+            // 預先生成 30 條初始魚
             for (let i = 0; i < 30; i++) {
                 spawnFish(25, 30); 
             }
+            
+            // 啟動氣泡循環生成系統
+            startBubbleLoop();
         }
 
+        // --- [新加入] 循環氣泡邏輯 ---
+        function startBubbleLoop() {
+            // 網頁一開，先預先隨機塞 15 粒泡泡喺畫面唔同高度，等畫面唔使慢慢等佢升上嚟
+            for (let i = 0; i < 15; i++) {
+                createBubble(Math.random() * -100); // 傳入負數代表已經喺畫面中途升緊
+            }
+
+            // 每隔 400 毫秒喺底部自動放一粒新泡泡
+            setInterval(() => {
+                createBubble(0); 
+            }, 400);
+        }
+
+        function createBubble(initialYOffsetPercent) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+
+            // 隨機數值控制，令氣泡極度自然
+            const size = Math.random() * 15 + 8; // 氣泡大小由 8px 到 23px 隨機
+            const leftPos = Math.random() * 100; // 隨機水平起點 (0% - 100%)
+            const duration = Math.random() * 4 + 6; // 上升速度由 6秒 到 10秒 隨機
+            const wobbleDuration = Math.random() * 2 + 2; // 左右搖擺頻率隨機
+            const blurEffect = Math.random() * 2; // 隨機加少少景深模糊感
+
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.left = leftPos + '%';
+            
+            // 應用隨機動畫參數
+            bubble.style.animationDuration = `${duration}s, ${wobbleDuration}s`;
+            if (blurEffect > 1.2) {
+                bubble.style.filter = `blur(${blurEffect - 1.2}px)`; // 部分泡泡有前後景深效果
+            }
+
+            // 如果係初始化嘅泡泡，強制改寫佢嘅起始 translateY 位置
+            if (initialYOffsetPercent < 0) {
+                bubble.style.bottom = 'unset';
+                bubble.style.top = Math.random() * 100 + 'vh';
+            }
+
+            bubbleLayer.appendChild(bubble);
+
+            // 當泡泡浮出頂部動畫完結後，自動刪除釋放 RAM
+            setTimeout(() => {
+                bubble.remove();
+            }, duration * 1000);
+        }
+
+        // --- 點擊事件 ---
         lockContainer.addEventListener('click', () => {
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-            spawnFish(12, 33);
+
+            if (currentClicks < maxClicks) {
+                spawnFish(12, 33);
+                currentClicks++;
+            }
         });
 
         function spawnFish(baseRadius, range) {
@@ -145,8 +252,7 @@
             setTimeout(() => ripple.remove(), 800);
         }
 
-        window.onload = initCloserFish;
-
+        window.onload = initExhibit;
     </script>
 </body>
 </html>
