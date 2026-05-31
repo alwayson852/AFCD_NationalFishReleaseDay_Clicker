@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sea Interactive - Infinite Fish Exhibit</title>
+    <title>AlwaysOn - Deep Sea Exhibit Final (First 10 Clicks Only)</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -66,15 +66,23 @@
             position: absolute; width: 17vmin; height: auto; opacity: 0;
             filter: brightness(1.2) contrast(1.2) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
             will-change: transform, opacity;
-            animation: justFadeIn 0.8s ease-out forwards, fishWiggleZoom 3s ease-in-out infinite;
         }
+
+        .fish-flip-right { animation: justFadeIn 0.8s ease-out forwards, wiggleRight 3s ease-in-out infinite; }
+        .fish-flip-left { animation: justFadeIn 0.8s ease-out forwards, wiggleLeft 3s ease-in-out infinite; }
 
         @keyframes justFadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 
-        @keyframes fishWiggleZoom {
-            0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-            25% { transform: translate(-50%, -50%) rotate(5deg) scale(1.08); }
-            75% { transform: translate(-50%, -50%) rotate(-5deg) scale(0.96); }
+        @keyframes wiggleRight {
+            0%, 100% { transform: translate(-50%, -50%) scaleX(1) rotate(0deg) scale(1); }
+            25% { transform: translate(-50%, -50%) scaleX(1) rotate(5deg) scale(1.08); }
+            75% { transform: translate(-50%, -50%) scaleX(1) rotate(-5deg) scale(0.96); }
+        }
+
+        @keyframes wiggleLeft {
+            0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(0deg) scale(1); }
+            25% { transform: translate(-50%, -50%) scaleX(-1) rotate(-5deg) scale(1.08); }
+            75% { transform: translate(-50%, -50%) scaleX(-1) rotate(5deg) scale(0.96); }
         }
 
         /* 2. 互動層：Lock */
@@ -89,8 +97,6 @@
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
-            
-            /* 核心：鎖死呢個掣喺手機上嘅雙擊放大行為 */
             touch-action: manipulation; 
         }
 
@@ -127,6 +133,9 @@
         const fishLayer = document.getElementById('fish-layer');
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
+
+        // 點擊計數器
+        let clickCounter = 0;
 
         function initExhibit() {
             for (let i = 0; i < 30; i++) {
@@ -168,19 +177,23 @@
             setTimeout(() => { bubble.remove(); }, duration * 1000);
         }
 
-        // 點擊事件：已拔除次數限制，每㩒一下必定出一條魚
         lockContainer.addEventListener('click', () => {
+            // 掣本身嘅化學反應（Bump同波紋）每次撳都有
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-            spawnFish(12, 33);
+
+            // 限制：只有頭 10 下會出魚
+            if (clickCounter < 10) {
+                spawnFish(12, 33);
+                clickCounter++;
+            }
         });
 
         function spawnFish(baseRadius, range) {
             const randomSrc = fishPool[Math.floor(Math.random() * fishPool.length)];
             const img = document.createElement('img');
             img.src = randomSrc;
-            img.className = 'collected-fish';
 
             const angle = Math.random() * Math.PI * 2;
             const radius = baseRadius + Math.random() * range; 
@@ -191,8 +204,8 @@
             img.style.left = x + '%';
             img.style.top = y + '%';
 
-            const flip = Math.random() > 0.5 ? 1 : -1;
-            img.style.transform = `translate(-50%, -50%) scaleX(${flip})`;
+            const isFlip = Math.random() > 0.5;
+            img.className = `collected-fish ${isFlip ? 'fish-flip-left' : 'fish-flip-right'}`;
 
             const animDelay = Math.random() * -5;
             img.style.animationDelay = `0s, ${animDelay}s`; 
@@ -208,21 +221,18 @@
         }
 
         // ==========================================
-        // 🛠️ JS 物理防護：全面攔截 iOS/Android 手機縮放事件
+        // 🛠️ 手機物理防護：全面攔截 iOS/Android 縮放
         // ==========================================
-        
-        // 1. 封鎖雙指拉扯縮放 (Pinch to Zoom)
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) {
                 event.preventDefault(); 
             }
         }, { passive: false });
 
-        // 2. 封鎖狂㩒掣時嘅預設雙擊放大 (Double Tap to Zoom)
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function (event) {
             const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 100) {
+            if (now - lastTouchEnd <= 300) {
                 event.preventDefault(); 
             }
             lastTouchEnd = now;
