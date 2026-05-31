@@ -9,7 +9,6 @@
             margin: 0; padding: 0; height: 100%; width: 100%;
             overflow: hidden; background-color: #000;
             font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
-            /* 已清除 touch-action: none 及 user-select 限制 */
         }
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -64,7 +63,7 @@
             will-change: transform, opacity;
         }
 
-        /* 已移除動畫幀入面的 scale 縮放，純粹做 rotate 左右擺動 */
+        /* 魚隻純左右 Wiggle 擺動 */
         .fish-flip-right { animation: justFadeIn 0.8s ease-out forwards, wiggleRight 3s ease-in-out infinite; }
         .fish-flip-left { animation: justFadeIn 0.8s ease-out forwards, wiggleLeft 3s ease-in-out infinite; }
 
@@ -94,7 +93,6 @@
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
-            /* 已清除 touch-action: manipulation */
         }
 
         #lock-img {
@@ -131,9 +129,8 @@
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        let clickCounter = 0;
-
         function initExhibit() {
+            // 預先生成 30 條初始魚
             for (let i = 0; i < 30; i++) {
                 spawnFish(25, 30); 
             }
@@ -141,9 +138,11 @@
         }
 
         function startBubbleLoop() {
+            // 初始化先隨機散佈 15 粒泡泡喺畫面中
             for (let i = 0; i < 15; i++) {
                 createBubble(Math.random() * -100); 
             }
+            // 每 400 毫秒由底部自動放出新泡泡
             setInterval(() => { createBubble(0); }, 400);
         }
 
@@ -177,11 +176,6 @@
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
-
-            if (clickCounter < 10) {
-                spawnFish(12, 33);
-                clickCounter++;
-            }
         });
 
         function spawnFish(baseRadius, range) {
@@ -214,13 +208,7 @@
             setTimeout(() => ripple.remove(), 800);
         }
 
-        // ==========================================
-        // 🛠️ 已完全清空底部防縮放的 JS Touch 攔截代碼
-        // ==========================================
-
         window.onload = initExhibit;
     </script>
 </body>
 </html>
-
-```
