@@ -1,19 +1,22 @@
+已經幫你 **Del 走晒所有防手機縮放、攔截雙擊（Double Tap）、以及 Wiggle 動畫內自帶嘅 Zoom In/Out 縮放效果**。
+
+而家條魚純粹只會做 **左右 Wiggle 擺動**，唔會再有縮大縮小嘅動態；同時手機原生嘅雙指拉扯、雙擊放大功能亦已經完全還原（解鎖）。
+
+### 最終 Full Code：
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AlwaysOn - Deep Sea Exhibit Final (First 10 Clicks Only)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFCD</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             overflow: hidden; background-color: #000;
             font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
-            
-            /* 強制封鎖成個網頁嘅手機拉扯同預設縮放行為 */
-            touch-action: none; 
-            -webkit-user-select: none;
-            user-select: none;
+            /* 已清除 touch-action: none 及 user-select 限制 */
         }
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -68,21 +71,22 @@
             will-change: transform, opacity;
         }
 
+        /* 已移除動畫幀入面的 scale 縮放，純粹做 rotate 左右擺動 */
         .fish-flip-right { animation: justFadeIn 0.8s ease-out forwards, wiggleRight 3s ease-in-out infinite; }
         .fish-flip-left { animation: justFadeIn 0.8s ease-out forwards, wiggleLeft 3s ease-in-out infinite; }
 
         @keyframes justFadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 
         @keyframes wiggleRight {
-            0%, 100% { transform: translate(-50%, -50%) scaleX(1) rotate(0deg) scale(1); }
-            25% { transform: translate(-50%, -50%) scaleX(1) rotate(5deg) scale(1.08); }
-            75% { transform: translate(-50%, -50%) scaleX(1) rotate(-5deg) scale(0.96); }
+            0%, 100% { transform: translate(-50%, -50%) scaleX(1) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) scaleX(1) rotate(5deg); }
+            75% { transform: translate(-50%, -50%) scaleX(1) rotate(-5deg); }
         }
 
         @keyframes wiggleLeft {
-            0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(0deg) scale(1); }
-            25% { transform: translate(-50%, -50%) scaleX(-1) rotate(-5deg) scale(1.08); }
-            75% { transform: translate(-50%, -50%) scaleX(-1) rotate(5deg) scale(0.96); }
+            0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) scaleX(-1) rotate(-5deg); }
+            75% { transform: translate(-50%, -50%) scaleX(-1) rotate(5deg); }
         }
 
         /* 2. 互動層：Lock */
@@ -97,7 +101,7 @@
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; 
+            /* 已清除 touch-action: manipulation */
         }
 
         #lock-img {
@@ -134,7 +138,6 @@
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        // 點擊計數器
         let clickCounter = 0;
 
         function initExhibit() {
@@ -178,12 +181,10 @@
         }
 
         lockContainer.addEventListener('click', () => {
-            // 掣本身嘅化學反應（Bump同波紋）每次撳都有
             lockContainer.classList.add('bump');
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
 
-            // 限制：只有頭 10 下會出魚
             if (clickCounter < 10) {
                 spawnFish(12, 33);
                 clickCounter++;
@@ -221,24 +222,12 @@
         }
 
         // ==========================================
-        // 🛠️ 手機物理防護：全面攔截 iOS/Android 縮放
+        // 🛠️ 已完全清空底部防縮放的 JS Touch 攔截代碼
         // ==========================================
-        document.addEventListener('touchstart', function (event) {
-            if (event.touches.length > 1) {
-                event.preventDefault(); 
-            }
-        }, { passive: false });
-
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault(); 
-            }
-            lastTouchEnd = now;
-        }, { passive: false });
 
         window.onload = initExhibit;
     </script>
 </body>
 </html>
+
+```
