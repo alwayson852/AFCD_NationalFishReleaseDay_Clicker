@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFCD</title>
+    <title>AlwaysOn - Deep Sea Exhibit (Optimized Bubbles)</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -129,8 +129,11 @@
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
+        // 氣泡效能優化計數
+        let activeBubbles = 0;
+        const maxBubbles = 25; // 限制畫面最多同時存在 25 粒泡泡
+
         function initExhibit() {
-            // 預先生成 30 條初始魚
             for (let i = 0; i < 30; i++) {
                 spawnFish(25, 30); 
             }
@@ -138,18 +141,22 @@
         }
 
         function startBubbleLoop() {
-            // 初始化先隨機散佈 15 粒泡泡喺畫面中
-            for (let i = 0; i < 15; i++) {
+            // 初始化先預建 10 粒散落喺畫面唔同高度
+            for (let i = 0; i < 10; i++) {
                 createBubble(Math.random() * -100); 
             }
-            // 每 400 毫秒由底部自動放出新泡泡
-            setInterval(() => { createBubble(0); }, 400);
+            // 調慢生成速度（每 600ms 放一粒），減低手機 CPU 壓力
+            setInterval(() => { createBubble(0); }, 600);
         }
 
         function createBubble(initialYOffsetPercent) {
+            // 數量控流：如果開緊嘅泡泡已經去到上限，直接跳過，唔再新建 DOM
+            if (activeBubbles >= maxBubbles && initialYOffsetPercent === 0) return;
+
+            activeBubbles++;
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            const size = Math.random() * 15 + 8; 
+            const size = Math.random() * 12 + 6; // 微調大小（6px - 18px），越細粒行得越順
             const leftPos = Math.random() * 100; 
             const duration = Math.random() * 4 + 6; 
             const wobbleDuration = Math.random() * 2 + 2; 
@@ -160,8 +167,8 @@
             bubble.style.left = leftPos + '%';
             bubble.style.animationDuration = `${duration}s, ${wobbleDuration}s`;
             
-            if (blurEffect > 1.2) {
-                bubble.style.filter = `blur(${blurEffect - 1.2}px)`; 
+            if (blurEffect > 1.4) {
+                bubble.style.filter = `blur(${blurEffect - 1.4}px)`; 
             }
             if (initialYOffsetPercent < 0) {
                 bubble.style.bottom = 'unset';
@@ -169,7 +176,12 @@
             }
 
             bubbleLayer.appendChild(bubble);
-            setTimeout(() => { bubble.remove(); }, duration * 1000);
+
+            // 動態完結後，扣減計數並徹底移除
+            setTimeout(() => {
+                bubble.remove();
+                activeBubbles--;
+            }, duration * 1000);
         }
 
         lockContainer.addEventListener('click', () => {
