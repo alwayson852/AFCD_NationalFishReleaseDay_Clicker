@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlwaysOn - Deep Sea Exhibit (Optimized Bubbles)</title>
+    <title>Agriculture, Fisheries and Conservation Department</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -129,34 +129,75 @@
         const bubbleLayer = document.getElementById('bubble-layer');
         const fishPool = ['Fish1.png', 'Fish2.png', 'Fish3.png', 'Fish4.png', 'Fish5.png', 'Fish6.png'];
 
-        // 氣泡效能優化計數
         let activeBubbles = 0;
-        const maxBubbles = 25; // 限制畫面最多同時存在 25 粒泡泡
+        const maxBubbles = 25; 
 
         function initExhibit() {
-            for (let i = 0; i < 30; i++) {
-                spawnFish(25, 30); 
+            const totalInitialFish = 30;
+            
+            // 優化算法：平均分佈出魚
+            for (let i = 0; i < totalInitialFish; i++) {
+                // 1. 將 360 度 (2*PI) 按比例平分給 30 條魚，再加少少隨機微調 (Jitter)，防止變死板幾何圖案
+                const baseAngle = (i / totalInitialFish) * Math.PI * 2;
+                const jitterAngle = (Math.random() * 0.4) - 0.2; // 左右微調約 11 度
+                const angle = baseAngle + jitterAngle;
+
+                // 2. 半徑分流：分成 內、中、外 三層交替，確保不會全部堆在同一個圓圈上
+                let baseRadius;
+                if (i % 3 === 0) {
+                    baseRadius = 22; // 內圈
+                } else if (i % 3 === 1) {
+                    baseRadius = 34; // 中圈
+                } else {
+                    baseRadius = 46; // 外圈
+                }
+                const radius = baseRadius + (Math.random() * 8 - 4); // 半徑上下加減 4% 微調
+
+                // 出魚
+                spawnFishAt(angle, radius);
             }
+            
             startBubbleLoop();
+            
+            const currentFishCount = fishLayer.getElementsByTagName('img').length;
+            console.log(`[Live Fish Count]: ${currentFishCount}`);
+        }
+
+        function spawnFishAt(angle, radius) {
+            const randomSrc = fishPool[Math.floor(Math.random() * fishPool.length)];
+            const img = document.createElement('img');
+            img.src = randomSrc;
+
+            // 以中心點 (50%, 50%) 即 Button 位置做起點進行擴散
+            const x = 50 + radius * Math.cos(angle);
+            const y = 50 + radius * Math.sin(angle);
+
+            img.style.left = x + '%';
+            img.style.top = y + '%';
+
+            const isFlip = Math.random() > 0.5;
+            img.className = `collected-fish ${isFlip ? 'fish-flip-left' : 'fish-flip-right'}`;
+
+            const animDelay = Math.random() * -5;
+            img.style.animationDelay = `0s, ${animDelay}s`; 
+            
+            fishLayer.appendChild(img);
         }
 
         function startBubbleLoop() {
-            // 初始化先預建 10 粒散落喺畫面唔同高度
             for (let i = 0; i < 10; i++) {
                 createBubble(Math.random() * -100); 
             }
-            // 調慢生成速度（每 600ms 放一粒），減低手機 CPU 壓力
             setInterval(() => { createBubble(0); }, 600);
         }
 
         function createBubble(initialYOffsetPercent) {
-            // 數量控流：如果開緊嘅泡泡已經去到上限，直接跳過，唔再新建 DOM
             if (activeBubbles >= maxBubbles && initialYOffsetPercent === 0) return;
 
             activeBubbles++;
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            const size = Math.random() * 12 + 6; // 微調大小（6px - 18px），越細粒行得越順
+            const size = Math.random() * 12 + 6; 
             const leftPos = Math.random() * 100; 
             const duration = Math.random() * 4 + 6; 
             const wobbleDuration = Math.random() * 2 + 2; 
@@ -177,7 +218,6 @@
 
             bubbleLayer.appendChild(bubble);
 
-            // 動態完結後，扣減計數並徹底移除
             setTimeout(() => {
                 bubble.remove();
                 activeBubbles--;
@@ -189,29 +229,6 @@
             setTimeout(() => lockContainer.classList.remove('bump'), 100);
             createRipple();
         });
-
-        function spawnFish(baseRadius, range) {
-            const randomSrc = fishPool[Math.floor(Math.random() * fishPool.length)];
-            const img = document.createElement('img');
-            img.src = randomSrc;
-
-            const angle = Math.random() * Math.PI * 2;
-            const radius = baseRadius + Math.random() * range; 
-            
-            const x = 50 + radius * Math.cos(angle);
-            const y = 50 + radius * Math.sin(angle);
-
-            img.style.left = x + '%';
-            img.style.top = y + '%';
-
-            const isFlip = Math.random() > 0.5;
-            img.className = `collected-fish ${isFlip ? 'fish-flip-left' : 'fish-flip-right'}`;
-
-            const animDelay = Math.random() * -5;
-            img.style.animationDelay = `0s, ${animDelay}s`; 
-            
-            fishLayer.appendChild(img);
-        }
 
         function createRipple() {
             const ripple = document.createElement('div');
