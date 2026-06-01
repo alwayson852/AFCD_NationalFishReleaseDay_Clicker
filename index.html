@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Agriculture, Fisheries and Conservation Department</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             overflow: hidden; background-color: #000;
             font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -100,14 +103,25 @@
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #lock-container.bump #lock-img { transform: scale(0.8); }
+        /* [已恢復] 點擊時 Lock 掣本體縮小 */
+        #lock-container.bump #lock-img { transform: scale(0.85); }
 
+        /* [已恢復] 標準 Ripple 水波紋樣式 */
         .ripple {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            border: 8px solid rgba(255, 255, 255, 0.7); border-radius: 50%;
-            pointer-events: none; z-index: 8; animation: rippleEffect 0.8s ease-out forwards;
+            position: absolute; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            border: 6px solid rgba(255, 255, 255, 0.75); 
+            border-radius: 50%;
+            pointer-events: none; 
+            z-index: 8; 
+            animation: rippleEffect 0.7s ease-out forwards;
         }
-        @keyframes rippleEffect { 0% { width: 0; height: 0; opacity: 1; } 100% { width: 80vmin; height: 80vmin; opacity: 0; } }
+
+        @keyframes rippleEffect { 
+            0% { width: 0vmin; height: 0vmin; opacity: 1; } 
+            100% { width: 85vmin; height: 85vmin; opacity: 0; } 
+        }
     </style>
 </head>
 <body>
@@ -134,33 +148,22 @@
 
         function initExhibit() {
             const totalInitialFish = 30;
-            
-            // 優化算法：平均分佈出魚
             for (let i = 0; i < totalInitialFish; i++) {
-                // 1. 將 360 度 (2*PI) 按比例平分給 30 條魚，再加少少隨機微調 (Jitter)，防止變死板幾何圖案
                 const baseAngle = (i / totalInitialFish) * Math.PI * 2;
-                const jitterAngle = (Math.random() * 0.4) - 0.2; // 左右微調約 11 度
+                const jitterAngle = (Math.random() * 0.4) - 0.2; 
                 const angle = baseAngle + jitterAngle;
 
-                // 2. 半徑分流：分成 內、中、外 三層交替，確保不會全部堆在同一個圓圈上
                 let baseRadius;
-                if (i % 3 === 0) {
-                    baseRadius = 22; // 內圈
-                } else if (i % 3 === 1) {
-                    baseRadius = 34; // 中圈
-                } else {
-                    baseRadius = 46; // 外圈
-                }
-                const radius = baseRadius + (Math.random() * 8 - 4); // 半徑上下加減 4% 微調
+                if (i % 3 === 0) { baseRadius = 22; } 
+                else if (i % 3 === 1) { baseRadius = 34; } 
+                else { baseRadius = 46; }
+                const radius = baseRadius + (Math.random() * 8 - 4); 
 
-                // 出魚
                 spawnFishAt(angle, radius);
             }
-            
             startBubbleLoop();
             
-            const currentFishCount = fishLayer.getElementsByTagName('img').length;
-            console.log(`[Live Fish Count]: ${currentFishCount}`);
+            console.log(`[Live Fish Count]: ${fishLayer.getElementsByTagName('img').length}`);
         }
 
         function spawnFishAt(angle, radius) {
@@ -168,7 +171,6 @@
             const img = document.createElement('img');
             img.src = randomSrc;
 
-            // 以中心點 (50%, 50%) 即 Button 位置做起點進行擴散
             const x = 50 + radius * Math.cos(angle);
             const y = 50 + radius * Math.sin(angle);
 
@@ -185,9 +187,7 @@
         }
 
         function startBubbleLoop() {
-            for (let i = 0; i < 10; i++) {
-                createBubble(Math.random() * -100); 
-            }
+            for (let i = 0; i < 10; i++) { createBubble(Math.random() * -100); }
             setInterval(() => { createBubble(0); }, 600);
         }
 
@@ -208,9 +208,7 @@
             bubble.style.left = leftPos + '%';
             bubble.style.animationDuration = `${duration}s, ${wobbleDuration}s`;
             
-            if (blurEffect > 1.4) {
-                bubble.style.filter = `blur(${blurEffect - 1.4}px)`; 
-            }
+            if (blurEffect > 1.4) { bubble.style.filter = `blur(${blurEffect - 1.4}px)`; }
             if (initialYOffsetPercent < 0) {
                 bubble.style.bottom = 'unset';
                 bubble.style.top = Math.random() * 100 + 'vh';
@@ -224,17 +222,28 @@
             }, duration * 1000);
         }
 
-        lockContainer.addEventListener('click', () => {
+        // ==========================================
+        // 🚀 執行動畫
+        // ==========================================
+        lockContainer.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); 
+            
+            // 觸發 Bump 縮小
             lockContainer.classList.add('bump');
-            setTimeout(() => lockContainer.classList.remove('bump'), 100);
+            
+            // 觸發水波紋
             createRipple();
+            
+            // 100毫秒後放開還原大細
+            setTimeout(() => lockContainer.classList.remove('bump'), 100);
         });
 
         function createRipple() {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
             lockContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 800);
+            // 動畫播完（700ms）後徹底消滅該 DOM 元素
+            setTimeout(() => ripple.remove(), 700);
         }
 
         window.onload = initExhibit;
